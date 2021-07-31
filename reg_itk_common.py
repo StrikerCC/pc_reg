@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 '''
-@File    :   reg_itk.py    
+@File    :   reg_itk_v4.py
 @Contact :   chengc0611@gmail.com
 @License :   
 
@@ -21,9 +21,7 @@ from math import pi, sin, cos
 import itk
 
 from data import read_data_itk
-from icp_JHCT_GD import reg_object_init, reg_object_type_def
-# from icp_ED_GD import reg_object_init, reg_object_type_def
-# from icp_JHCT_GD import reg_object_init, reg_object_type_def
+from icp_ED_LM import reg_object_init, reg_object_type_def
 
 
 dimension = 0
@@ -43,23 +41,27 @@ def reg(show=False, evulate=False):
     dimension = 3
     # Make point sets
     fixed_set, moving_set, fixed_set_match = read_data_itk(reorder=True, show=True)
-    num_iterations = 45
+    num_iterations = 450
     tolerance = 0.05
     passed = True
 
     print('initializing metric and optimizer')
+    time_0 = time.time()
     TransformType, PointSetMetricType, ShiftScalesType, OptimizerType = reg_object_type_def()
-    metric, shift_scale_estimator, optimizer = reg_object_init(TransformType,
-                                                               PointSetMetricType, fixed_set, moving_set,
-                                                               ShiftScalesType,
-                                                               OptimizerType, num_iterations)
+    transform, registration = reg_object_init(TransformType,
+                                                PointSetMetricType, fixed_set, moving_set,
+                                                ShiftScalesType,
+                                                OptimizerType, num_iterations)
     print('initialized metric and optimizer')
 
     # optimizer.AddObserver(itk.IterationEvent(), print_iteration(optimizer))
 
     # Run optimization to align the point sets
-    time_0 = time.time()
-    optimizer.StartOptimization()
+
+    registration.Update()
+
+    print(num_iterations, ' iterations took ', time.time() - time_0, 'seconds, which is ',
+          (time.time() - time_0) / 60.0, 'minutes')
     print(f'Number of iterations: {num_iterations}')
     # print(f'Moving-source final value: {optimizer.GetCurrentMetricValue()}')
     # print(f'Moving-source final position: {list(optimizer.GetCurrentPosition())}')
@@ -68,9 +70,7 @@ def reg(show=False, evulate=False):
 
     # applying the resultant transform to moving points and verify result
     print('Fixed\tMoving\tMovingTransformed\tFixedTransformed\tDiff')
-
-    moving_inverse = metric.GetMovingTransform().GetInverseTransform()
-    fixed_inverse = metric.GetFixedTransform().GetInverseTransform()
+    transform.GetParameters()
 
     print(num_iterations, ' iterations took ', time.time() - time_0, 'seconds, which is ',
           (time.time() - time_0) / 60.0, 'minutes')
@@ -82,6 +82,7 @@ def reg(show=False, evulate=False):
             transformed_moving_point = moving_inverse.TransformPoint(moving_set.GetPoint(n))
             transformed_fixed_point = fixed_inverse.TransformPoint(fixed_set.GetPoint(n))
 
+            # assume two point set match
             difference = [transformed_moving_point[dim] - transformed_fixed_point[dim]
                           for dim in range(0, dimension)]
 

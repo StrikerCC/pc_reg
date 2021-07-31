@@ -35,33 +35,32 @@ def reg_object_type_def(dimension=3):
 
 
 def reg_object_init(TransformType,
-                    PointSetMetricType, fixed_set, moving_set, transform,
-                    ShiftScalesType,
+                    PointSetMetricType, fixed_set, moving_set,
                     OptimizerType, num_iterations,
                     RegistrationType):
 
     transform = TransformType.New()
+    transform.SetIdentity()
 
     metric = PointSetMetricType.New()
 
-    # shift_scale_estimator = ShiftScalesType.New(
-    #     Metric=metric,
-    #     VirtualDomainPointSet=metric.GetVirtualTransformedPointSet())
     scales = OptimizerType.ScaleType(transform.GetNumberOfParameters())
     optimizer = OptimizerType.New(
         UseCostFunctionGradient=False,
         Scales=scales,
         NumberOfIterations=num_iterations,
-        ValueTolerance=0.0001,
-        GradientTolerance=0.0001,
+        ValueTolerance=1e-5,
+        GradientTolerance=1e-5,
         EpsilonFunction=1e-5,
     )
 
     registration = RegistrationType.New(
+        InitialTransformParameters=transform.GetParameters(),
         Metric=metric,
         Optimizer=optimizer,
         SetTransform=transform,
         SetFixedPointSet=fixed_set,
-        SetMovingPointSet=moving_set)
+        SetMovingPointSet=moving_set
+    )
 
-    return registration
+    return transform, registration

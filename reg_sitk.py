@@ -13,7 +13,7 @@
 # import lib
 import SimpleITK as sitk
 
-from reg_itk import read_data_sitk
+from reg_itk_v4 import read_data_sitk
 
 
 def reg():

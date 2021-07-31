@@ -19,15 +19,18 @@ import itk
 
 
 def reorder_data(points):
-    return np.sort(points, axis=0)
+    index = np.argsort(points, axis=0)
+    index_x = index[:, 0]
+    points = points[index_x, :]
+    return points
 
 
 def read_data_itk(reorder=False, show=False):
     dimension = 3
-    sperse = 100
+    sparse = 10
     file_fix, file_move = r'./data/bunny.txt', r'./data/bunny-Copy.txt'
     array_fix_org, array_move_org = np.loadtxt(file_fix), np.loadtxt(file_move)
-    array_fix, array_move = array_fix_org[::sperse], array_move_org[::sperse]
+    array_fix, array_move = array_fix_org[::sparse], array_move_org[::sparse]
     array_move_reorder = array_move if not reorder else reorder_data(array_move)
 
     PointSetType = itk.PointSet[itk.F, dimension]
@@ -50,7 +53,8 @@ def read_data_itk(reorder=False, show=False):
         fig = plt.figure()
         ax = fig.add_subplot(projection='3d')
         ax.scatter(array_fix[:, 0], array_fix[:, 1], array_fix[:, 2])
-        ax.scatter(array_move[:, 0], array_move[:, 1], array_move[:, 2])
+        # ax.scatter(array_move[:, 0], array_move[:, 1], array_move[:, 2])
+        ax.scatter(array_move_reorder[:, 0], array_move_reorder[:, 1], array_move_reorder[:, 2])
         ax.set_xlabel('X Label')
         ax.set_ylabel('Y Label')
         ax.set_zlabel('Z Label')

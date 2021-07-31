@@ -27,7 +27,7 @@ def reg_object_type_def(dimension=3):
 
     ShiftScalesType = itk.RegistrationParameterScalesFromPhysicalShift[PointSetMetricType]
 
-    OptimizerType = itk.RegularStepGradientDescentOptimizerv4[itk.D]
+    OptimizerType = itk.LevenbergMarquardtOptimizer
 
     return TransformType, PointSetMetricType, ShiftScalesType, OptimizerType
 
@@ -60,9 +60,6 @@ def reg_object_init(TransformType,
         Metric=metric,
         NumberOfIterations=num_iterations,
         ScalesEstimator=shift_scale_estimator,
-        # MaximumStepSizeInPhysicalUnits=3.0,
-        # MinimumConvergenceValue=0.1,
-        # ConvergenceWindowSize=10
     )
 
     return metric, shift_scale_estimator, optimizer
