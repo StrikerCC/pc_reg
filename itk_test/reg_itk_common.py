@@ -11,21 +11,13 @@
 '''
 
 # import lib
-import sys
 import time
 
 import numpy as np
 import matplotlib.pyplot as plt
-from math import pi, sin, cos
-
-import itk
 
 from data import read_data_itk
-from icp_JHCT_GD import reg_object_init, reg_object_type_def
-
-# from icp_ED_GD import reg_object_init, reg_object_type_def
-# from icp_JHCT_GD import reg_object_init, reg_object_type_def
-
+from itk_test.icp_ED_LM import reg_object_init, reg_object_type_def
 
 dimension = 0
 
@@ -50,18 +42,19 @@ def reg(show=False, evulate=False):
 
     print('initializing metric and optimizer')
     time_0 = time.time()
-    TransformType, PointSetMetricType, ShiftScalesType, OptimizerType, RegistrationType = reg_object_type_def()
-    metric, shift_scale_estimator, optimizer = reg_object_init(TransformType,
-                                                               PointSetMetricType, fixed_set, moving_set,
-                                                               OptimizerType, num_iterations,
-                                                               RegistrationType)
+    TransformType, PointSetMetricType, OptimizerType, RegistrationType = reg_object_type_def()
+    transform, optimizer = reg_object_init(TransformType,
+                                              PointSetMetricType, fixed_set, moving_set,
+                                              OptimizerType, num_iterations,
+                                              RegistrationType)
     print('initialized metric and optimizer')
 
-    # optimizer.AddObserver(itk.IterationEvent(), print_iteration(optimizer))
+    # optimizer.AddObserver(itk_test.IterationEvent(), print_iteration(optimizer))
 
     # Run optimization to align the point sets
 
-    ra.StartOptimization()
+    # registration.Update()
+    optimizer.optimizer()
 
     print(num_iterations, ' iterations took ', time.time() - time_0, 'seconds, which is ',
           (time.time() - time_0) / 60.0, 'minutes')
@@ -73,9 +66,7 @@ def reg(show=False, evulate=False):
 
     # applying the resultant transform to moving points and verify result
     print('Fixed\tMoving\tMovingTransformed\tFixedTransformed\tDiff')
-
-    moving_inverse = metric.GetMovingTransform().GetInverseTransform()
-    fixed_inverse = metric.GetFixedTransform().GetInverseTransform()
+    transform.GetParameters()
 
     print(num_iterations, ' iterations took ', time.time() - time_0, 'seconds, which is ',
           (time.time() - time_0) / 60.0, 'minutes')
@@ -83,26 +74,26 @@ def reg(show=False, evulate=False):
     if evulate:
         list_fixed, list_moved, differences = [], [], []
 
-        for n in range(0, metric.GetNumberOfComponents()):
-            transformed_moving_point = moving_inverse.TransformPoint(moving_set.GetPoint(n))
-            transformed_fixed_point = fixed_inverse.TransformPoint(fixed_set.GetPoint(n))
-
-            # assume two point set match
-            difference = [transformed_moving_point[dim] - transformed_fixed_point[dim]
-                          for dim in range(0, dimension)]
-
-            list_fixed.append([coord for coord in transformed_fixed_point])
-            list_moved.append([coord for coord in transformed_moving_point])
-            differences.append(difference)
-            # print(f'{print_point(fixed_set.GetPoint(n))}'
-            #       f'\t{print_point(moving_set.GetPoint(n))}'
-            #       f'\t{print_point(transformed_moving_point)}'
-            #       f'\t{print_point(transformed_fixed_point)}'
-            #       f'\t{print_point(difference)}')
-
-            if (any(abs(difference[dim]) > tolerance
-                    for dim in range(0, dimension))):
-                passed = False
+        # for n in range(0, metric.GetNumberOfComponents()):
+        #     transformed_moving_point = moving_inverse.TransformPoint(moving_set.GetPoint(n))
+        #     transformed_fixed_point = fixed_inverse.TransformPoint(fixed_set.GetPoint(n))
+        #
+        #     # assume two point set match
+        #     difference = [transformed_moving_point[dim] - transformed_fixed_point[dim]
+        #                   for dim in range(0, dimension)]
+        #
+        #     list_fixed.append([coord for coord in transformed_fixed_point])
+        #     list_moved.append([coord for coord in transformed_moving_point])
+        #     differences.append(difference)
+        #     # print(f'{print_point(fixed_set.GetPoint(n))}'
+        #     #       f'\t{print_point(moving_set.GetPoint(n))}'
+        #     #       f'\t{print_point(transformed_moving_point)}'
+        #     #       f'\t{print_point(transformed_fixed_point)}'
+        #     #       f'\t{print_point(difference)}')
+        #
+        #     if (any(abs(difference[dim]) > tolerance
+        #             for dim in range(0, dimension))):
+        #         passed = False
 
         """vis"""
         if show:

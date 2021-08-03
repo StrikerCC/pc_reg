@@ -15,20 +15,24 @@ import itk
 
 
 def reg_object_type_def(dimension=3):
+    itk_ = itk
+    # objs = itk_test
     # Define point types
     PointType = itk.Point[itk.F, dimension]
     PointSetType = itk.PointSet[itk.F, dimension]
 
     # define transform type
-    TransformType = itk.Euler3DTransform  # [itk.D]
+    TransformType = itk.Euler3DTransform
 
     # define metric type
     PointSetMetricType = itk.EuclideanDistancePointSetToPointSetMetricv4[PointSetType]
 
-    ShiftScalesType = itk.RegistrationParameterScalesFromPhysicalShift[PointSetMetricType]
+    OptimizerType = itk.LevenbergMarquardtOptimizer
 
-    OptimizerType = itk.RegularStepGradientDescentOptimizerv4[itk.D]
-    return TransformType, PointSetMetricType, ShiftScalesType, OptimizerType
+    # RegistrationType = itk_test.PointSetToPointSetRegistrationMethod[PointSetType]
+    RegistrationType = itk.RegularStepGradientDescentOptimizerv4[itk.D]
+
+    return TransformType, PointSetMetricType, OptimizerType, RegistrationType
 
 
 def reg_object_init(TransformType,

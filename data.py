@@ -14,7 +14,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-import SimpleITK as sitk
+# import SimpleITK as sitk
 import itk
 
 
@@ -35,7 +35,7 @@ def read_data_itk(reorder=False, show=False):
 
     PointSetType = itk.PointSet[itk.F, dimension]
 
-    """itk point type"""
+    """itk_test point type"""
     fixed_points = PointSetType.New()
     moving_points_reorder = PointSetType.New()
     fixed_points_match = PointSetType.New()

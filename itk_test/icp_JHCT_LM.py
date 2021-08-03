@@ -20,7 +20,7 @@ def reg_object_type_def(dimension=3):
     PointSetType = itk.PointSet[itk.F, dimension]
 
     # define transform type
-    TransformType = itk.Euler3DTransform  # [itk.D]
+    TransformType = itk.Euler3DTransform  # [itk_test.D]
 
     # define metric type
     PointSetMetricType = itk.JensenHavrdaCharvatTsallisPointSetToPointSetMetricv4[PointSetType]

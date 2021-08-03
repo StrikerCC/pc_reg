@@ -15,6 +15,8 @@ import itk
 
 
 def reg_object_type_def(dimension=3):
+    itk_ = itk
+    # objs = itk_test
     # Define point types
     PointType = itk.Point[itk.F, dimension]
     PointSetType = itk.PointSet[itk.F, dimension]
@@ -25,13 +27,12 @@ def reg_object_type_def(dimension=3):
     # define metric type
     PointSetMetricType = itk.EuclideanDistancePointSetToPointSetMetricv4[PointSetType]
 
-    ShiftScalesType = itk.RegistrationParameterScalesFromPhysicalShift[PointSetMetricType]
-
     OptimizerType = itk.LevenbergMarquardtOptimizer
 
     RegistrationType = itk.PointSetToPointSetRegistrationMethod[PointSetType]
+    # RegistrationType = itk_test.ITKRegistrationMethodsv4.ImageRegistrationMethodv4 #[PointSetType]
 
-    return TransformType, PointSetMetricType, ShiftScalesType, OptimizerType, RegistrationType
+    return TransformType, PointSetMetricType, OptimizerType, RegistrationType
 
 
 def reg_object_init(TransformType,
@@ -44,23 +45,23 @@ def reg_object_init(TransformType,
 
     metric = PointSetMetricType.New()
 
-    scales = OptimizerType.ScaleType(transform.GetNumberOfParameters())
+    # scales = OptimizerType.ScaleType(transform.GetNumberOfParameters())
     optimizer = OptimizerType.New(
         UseCostFunctionGradient=False,
-        Scales=scales,
+        # Scales=scales,
         NumberOfIterations=num_iterations,
         ValueTolerance=1e-5,
         GradientTolerance=1e-5,
         EpsilonFunction=1e-5,
     )
 
-    registration = RegistrationType.New(
-        InitialTransformParameters=transform.GetParameters(),
-        Metric=metric,
-        Optimizer=optimizer,
-        SetTransform=transform,
-        SetFixedPointSet=fixed_set,
-        SetMovingPointSet=moving_set
-    )
+    # registration = RegistrationType.New(
+    #     # InitialTransformParameters=transform.GetParameters(),
+    #     Metric=metric,
+    #     Optimizer=optimizer,
+    #     SetTransform=transform,
+    #     SetFixedPointSet=fixed_set,
+    #     SetMovingPointSet=moving_set
+    # )
 
-    return transform, registration
+    return transform, optimizer
