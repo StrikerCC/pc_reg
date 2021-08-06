@@ -16,7 +16,7 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 
-from data import read_data_itk
+from read_data import read_data_itk
 # from icp_JHCT_GD import reg_object_init, reg_object_type_def
 from itk_test.icp_ED_GD import reg_object_init, reg_object_type_def
 

@@ -19,7 +19,7 @@ from scipy import spatial
 import open3d as o3d
 
 
-def find_correspondences(p1, p2, debug=False):
+def find_closet_point(p1, p2, k, debug=False):
     assert isinstance(p1, np.ndarray) and isinstance(p2, np.ndarray), 'expect numpy array, but get ' + str(type(p1)) + 'and ' + str(type(p1)) + ' instead '
     assert p1.shape[1] == p2.shape[1] == 3, str(p1.shape) + ' ' + str(p2.shape)
 
@@ -32,7 +32,7 @@ def find_correspondences(p1, p2, debug=False):
     pts = p2
 
     """In p1, find nearest neighbor of each p2"""
-    dis, index = tree1.query(pts, k=5)
+    dis, index = tree1.query(pts, k=k)
 
     if debug:
         print('scipy Kd-tree take ', time.time() - time_0, 'to find nearest neighbor of ', pts)
@@ -56,7 +56,7 @@ def main():
     o3d.visualization.draw_geometries([pc_2, pc_1])
 
     p1 = p1[:, np.argsort(p1[1, :])]
-    find_correspondences(p1, p2)
+    find_closet_point(p1, p2, k=5)
 
 
 if __name__ == '__main__':

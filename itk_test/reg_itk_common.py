@@ -16,7 +16,7 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 
-from data import read_data_itk
+from read_data import read_data_itk
 from itk_test.icp_ED_LM import reg_object_init, reg_object_type_def
 
 dimension = 0
