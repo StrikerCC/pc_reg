@@ -11,6 +11,8 @@
 '''
 
 # import lib
+import copy
+import numpy as np
 import matplotlib.pyplot as plt
 import open3d as o3d
 # from data import read_data
@@ -40,6 +42,15 @@ def vis_open3d(arrays):
         pcs.append(o3d.geometry.PointCloud())
         pcs[-1].points = o3d.utility.Vector3dVector(array)
     o3d.visualization.draw_geometries(pcs)
+
+
+def draw_registration_result(source, target, transformation=np.eye(4), window_name=''):
+    source_temp = copy.deepcopy(source)
+    target_temp = copy.deepcopy(target)
+    source_temp.paint_uniform_color([1, 0.706, 0])
+    target_temp.paint_uniform_color([0, 0.651, 0.929])
+    source_temp.transform(transformation)
+    o3d.visualization.draw_geometries([source_temp, target_temp], window_name=window_name)
 
 
 def main():

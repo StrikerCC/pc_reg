@@ -12,61 +12,18 @@
 
 # import lib
 import copy
+import os
+
 import numpy as np
 import open3d as o3d
+
+import read_data
+import process_data
 import utils
 import transforms3d as t3d
 
-def draw_registration_result(source, target, transformation):
-    source_temp = copy.deepcopy(source)
-    target_temp = copy.deepcopy(target)
-    source_temp.paint_uniform_color([1, 0.706, 0])
-    target_temp.paint_uniform_color([0, 0.651, 0.929])
-    source_temp.transform(transformation)
-    o3d.visualization.draw_geometries([source_temp, target_temp])
-    # o3d.visualization.draw_geometries([source_temp, target_temp],
-    #                                   zoom=0.4559,
-    #                                   front=[0.6452, -0.3036, -0.7011],
-    #                                   lookat=[1.9892, 2.0208, 1.8945],
-    #                                   up=[-0.2779, -0.9482, 0.1556])
-
-
-def preprocess_point_cloud(pcd, voxel_size):
-    print(":: Downsample with a voxel size %.3f." % voxel_size)
-    pcd_down = pcd.voxel_down_sample(voxel_size)
-
-    radius_normal = voxel_size * 2
-    print(":: Estimate normal with search radius %.3f." % radius_normal)
-    pcd_down.estimate_normals(
-        o3d.geometry.KDTreeSearchParamHybrid(radius=radius_normal, max_nn=30))
-
-    radius_feature = voxel_size * 5
-    print(":: Compute FPFH feature with search radius %.3f." % radius_feature)
-    pcd_fpfh = o3d.pipelines.registration.compute_fpfh_feature(
-        pcd_down,
-        o3d.geometry.KDTreeSearchParamHybrid(radius=radius_feature, max_nn=100))
-    return pcd_down, pcd_fpfh
-
-
-def prepare_dataset(voxel_size):
-    print(":: Load two point clouds and disturb initial pose.")
-    # source = o3d.io.read_point_cloud("./data/ICP/cloud_bin_0.pcd")
-    # target = o3d.io.read_point_cloud("./data/ICP/cloud_bin_1.pcd")
-    orientation = np.deg2rad([0.0, 0.0, 80.0])
-    translation = np.array([0.5, 0.0, 0.0])
-    source, target = utils.prepare_source_and_target_rigid_3d('./data/bunny.pcd',
-                                                              orientation=orientation,
-                                                              translation=translation,
-                                                              n_random=100,
-                                                              voxel_size=0.01)
-    # trans_init = np.asarray([[0.0, 0.0, 1.0, 0.0], [1.0, 0.0, 0.0, 0.0],
-    #                          [0.0, 1.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0]])
-    # source.transform(trans_init)
-    draw_registration_result(source, target, np.identity(4))
-
-    source_down, source_fpfh = preprocess_point_cloud(source, voxel_size)
-    target_down, target_fpfh = preprocess_point_cloud(target, voxel_size)
-    return source, target, source_down, target_down, source_fpfh, target_fpfh, orientation, translation
+from process_data import prepare_dataset_artificial, prepare_dataset
+from vis import draw_registration_result
 
 
 def execute_global_registration(source_down, target_down, source_fpfh,
@@ -79,12 +36,12 @@ def execute_global_registration(source_down, target_down, source_fpfh,
         source_down, target_down, source_fpfh, target_fpfh, True,
         distance_threshold,
         o3d.pipelines.registration.TransformationEstimationPointToPoint(False),
-        3, [
+        4, [
             o3d.pipelines.registration.CorrespondenceCheckerBasedOnEdgeLength(
                 0.9),
             o3d.pipelines.registration.CorrespondenceCheckerBasedOnDistance(
                 distance_threshold)
-        ], o3d.pipelines.registration.RANSACConvergenceCriteria(100000, 0.999))
+        ], o3d.pipelines.registration.RANSACConvergenceCriteria(10000000, 0.999))
     return result
 
 
@@ -101,12 +58,7 @@ def refine_registration(source, target, source_fpfh, target_fpfh, transformation
     return result
 
 
-def main():
-    """
-    use open3d package to register two point cloud
-    :return:
-    """
-
+def test_artificial_data():
     """prepare data"""
     # source, target = utils.prepare_source_and_target_rigid_3d('../../pc_reg/data/bunny.pcd')
     # source, target = utils.prepare_source_and_target_rigid_3d('../../pc_reg/data/bunny.pcd',
@@ -116,22 +68,7 @@ def main():
     #                                                           voxel_size=0.01)
 
     voxel_size = 0.005  # means 5cm for this dataset
-    source, target, source_down, target_down, source_fpfh, target_fpfh, orientation_gt, translation_gt = prepare_dataset(voxel_size)
-
-
-    """add vis object"""
-    # vis = o3.visualization.Visualizer()
-    # vis.create_window()
-    # result = copy.deepcopy(source)
-    # source.paint_uniform_color([1, 0, 0])
-    # target.paint_uniform_color([0, 1, 0])
-    # result.paint_uniform_color([0, 0, 1])
-    # vis.add_geometry(source)
-    # vis.add_geometry(target)
-    # vis.add_geometry(result)
-    # threshold = 0.05
-    # icp_iteration = 10000
-    # save_image = False
+    source, target, source_down, target_down, source_fpfh, target_fpfh, orientation_gt, translation_gt = prepare_dataset_artificial(voxel_size=voxel_size)
 
     """initial align"""
     result_ransac = execute_global_registration(source_down, target_down,
@@ -150,8 +87,64 @@ def main():
     """eval and vis"""
     print('Ground truth:\n  orientation(degree):\n', orientation_gt, '\n  translation:\n', translation_gt)
     print('Computed result:\n  orientation(degree):\n', orientation, '\n  translation:\n', translation)
-    print('Difference result:\n  orientation(degree):\n', np.rad2deg(np.abs(orientation_gt-orientation)), '\n   translation:\n', np.abs(translation-translation_gt))
+    print('Difference result:\n  orientation(degree):\n', np.rad2deg(np.abs(orientation_gt - orientation)),
+          '\n   translation:\n', np.abs(translation - translation_gt))
     draw_registration_result(source_down, target_down, result_icp.transformation)
+
+
+def test_real_scan_data():
+    """prepare data"""
+    # source, target = utils.prepare_source_and_target_rigid_3d('../../pc_reg/data/bunny.pcd')
+    # source, target = utils.prepare_source_and_target_rigid_3d('../../pc_reg/data/bunny.pcd',
+    #                                                           orientation=np.deg2rad([0.0, 0.0, 80.0]),
+    #                                                           translation=np.array([0.5, 0.0, 0.0]),
+    #                                                           n_random=100,
+    #                                                           voxel_size=0.01)
+    dataset_path = './data/TUW_TUW_models/TUW_models/'
+    for instance in os.listdir(dataset_path):
+        model_o3, views_o3, poses = read_data.read_data_tuw(dataset_path=dataset_path, instance=instance)
+        for view_o3, pose in zip(views_o3, poses):
+            orientation_gt, translation_gt = pose[:3, :3], pose[:3, 3]
+
+            """vis to debug pose"""
+            draw_registration_result(source=view_o3, target=model_o3, transformation=pose, window_name='Ground truth')
+            draw_registration_result(source=view_o3, target=model_o3, window_name='initial layout')
+
+            voxel_size = 0.005  # means 5cm for this dataset
+            source, target, source_down, target_down, source_fpfh, target_fpfh = prepare_dataset(source=model_o3,
+                                                                                                 target=view_o3,
+                                                                                                 voxel_size=voxel_size)
+
+            """initial align"""
+            result_ransac = execute_global_registration(source_down, target_down,
+                                                        source_fpfh, target_fpfh,
+                                                        voxel_size=voxel_size)
+            print(result_ransac)
+            draw_registration_result(source_down, target_down, result_ransac.transformation, window_name='Initial Registration')
+
+            """fine align"""
+            result_icp = refine_registration(source, target,
+                                             source_fpfh, target_fpfh,
+                                             result_ransac.transformation,
+                                             voxel_size=voxel_size)
+            orientation, translation = t3d.euler.mat2euler(result_icp.transformation[:3, :3]), result_icp.transformation[:3, 3]
+
+            """eval and vis"""
+            print('Ground truth:\n  orientation(degree):\n', orientation_gt, '\n  translation:\n', translation_gt)
+            print('Computed result:\n  orientation(degree):\n', orientation, '\n  translation:\n', translation)
+            print('Difference result:\n  orientation(degree):\n', np.rad2deg(np.abs(orientation_gt - orientation)),
+                  '\n   translation:\n', np.abs(translation - translation_gt))
+            draw_registration_result(source_down, target_down, result_icp.transformation, window_name='ICP Registration')
+            break
+
+def main():
+    """
+    use open3d package to register two point cloud
+    :return:
+    """
+    # test_artificial_data()
+    test_real_scan_data()
+
 
     # for i in range(icp_iteration):
     #     reg_p2p = o3.pipelines.registration.registration_icp(result, target, threshold,
