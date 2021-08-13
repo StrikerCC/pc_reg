@@ -22,7 +22,7 @@ import utils
 
 
 # load source and target point cloud
-source = o3.io.read_point_cloud('./data/bunny.pcd')
+source = o3.io.read_point_cloud('../OverlapPredator/data/stanford/bunny.pcd')
 target = copy.deepcopy(source)
 # transform target point cloud
 th = np.deg2rad(30.0)

@@ -128,6 +128,9 @@ def prepare_source_and_target_nonrigid_3d(source_filename,
     return source, target
 
 
+def is_close_enough():
+    pass
+
 if __name__ == "__main__":
     main()
 

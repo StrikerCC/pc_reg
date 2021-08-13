@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import copy
 
 # import SimpleITK as sitk
-import itk
+# import itk
 import open3d as o3
 import transforms3d as t3d
 

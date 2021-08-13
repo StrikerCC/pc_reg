@@ -12,6 +12,15 @@
 
 # import lib
 import numpy as np
+import open3d as o3d
+
+
+def main():
+    vis1 = o3d.visualization.Visualizer()
+    while True:
+        vis1.create_window(window_name='Input', width=960, height=540, left=0, top=0)
+        vis1.add_geometry(src_pcd_before)
+        vis1.update_geometry(src_pcd_before)
 
 
 def main():
