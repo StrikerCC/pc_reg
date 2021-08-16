@@ -136,7 +136,8 @@ def test_artificial_data(flag_show=True, flag_cout=True):
             time_0 = time.time()
             source, target, source_down, target_down, source_fpfh, target_fpfh, orientation_gt, translation_gt = \
                 prepare_dataset_artificial(source_filename=source_filename, voxel_size=voxel_size)
-            draw_registration_result(source=source, target=target, window_name='initial layout')
+            if flag_show:
+                draw_registration_result(source=source, target=target, window_name='initial layout')
 
             """initial align"""
             result_global = global_registration(source_down=source_down, target_down=target_down,
@@ -176,6 +177,8 @@ def test_artificial_data(flag_show=True, flag_cout=True):
 
             """eval and vis"""
             if flag_cout:
+                print(global_registration, source_filename)
+                print('Finished in', time_global + time_local)
                 print('Ground truth:\n  orientation(degree):\n', np.rad2deg(orientation_gt), '\n  translation:\n',
                       translation_gt)
                 print('Computed result:\n  orientation(degree):\n', np.rad2deg(orientation), '\n  translation:\n',
@@ -188,13 +191,10 @@ def test_artificial_data(flag_show=True, flag_cout=True):
 
         # statistics.sort(key=lambda error: np.linalg.norm(error['t']))
 
-        # if flag_cout:
-        #     for statistic in statistics:
-        #         print(statistic['method'])
-        #         print('translation error', np.rad2deg(statistic['t']), 'in degree')
-        #         print('rotation error', statistic['r'], 'in meter')
-        #         print('time global', statistic['time_global'])
-        #         print('time local', statistic['time_local'])
+    if flag_cout:
+        for reg in statistics.keys():
+            for i, id in enumerate(statistics[reg]['model']):
+                print('     ', reg, id, '\n         ', statistics[reg]['time_global'][i] + statistics[reg]['time_global'][i])
 
     """plot"""
     fig = plt.figure()
@@ -287,7 +287,7 @@ def main():
     use open3d package to register two point cloud
     :return:
     """
-    test_artificial_data(flag_show=True, flag_cout=False)
+    test_artificial_data(flag_show=True, flag_cout=True)
     # test_real_scan_data()
 
     # for i in range(icp_iteration):
