@@ -44,13 +44,16 @@ def vis_open3d(arrays):
     o3d.visualization.draw_geometries(pcs)
 
 
-def draw_registration_result(source, target, transformation=np.eye(4), window_name=''):
+def draw_registration_result(source, target=None, transformation=np.eye(4), window_name=''):
     source_temp = copy.deepcopy(source)
     target_temp = copy.deepcopy(target)
     source_temp.paint_uniform_color([1, 0.706, 0])
-    target_temp.paint_uniform_color([0, 0.651, 0.929])
+    if target: target_temp.paint_uniform_color([0, 0.651, 0.929])
     source_temp.transform(transformation)
-    o3d.visualization.draw_geometries([source_temp, target_temp], window_name=window_name)
+    if target:
+        o3d.visualization.draw_geometries([source_temp, target_temp], window_name=window_name)
+    else:
+        o3d.visualization.draw_geometries([source_temp], window_name=window_name)
 
 
 def main():

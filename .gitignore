@@ -47,4 +47,4 @@ Testing/Temporary/
 # ingnore whatever it is
 conda
 
-data
+data/
