@@ -11,9 +11,13 @@
 '''
 
 # import lib
+import copy
+
 import numpy as np
 import open3d as o3d
 from vis import draw_registration_result
+import transforms3d as t3d
+
 
 #
 # def main():
@@ -24,27 +28,42 @@ from vis import draw_registration_result
 #         vis1.update_geometry(src_pcd_before)
 
 
-def main():
-    for i, file in enumerate(['./data/TUW_TUW_models/TUW_models/bunny/',
-                              'data/TUW_TUW_models/TUW_models/dragon_recon/',
-                              'data/TUW_TUW_models/TUW_models/happy_recon/',
-                              'data/TUW_TUW_models/TUW_models/lucy/',
-                              'data/TUW_TUW_models/TUW_models/dragon_xyz/',
-                              ]):
-        pc = None
-        if i == 0:
-            pc = o3d.io.read_point_cloud(file + 'reconstruction/bun_zipper.ply')
-        if i == 1:
-            pc = o3d.io.read_point_cloud(file + 'dragon_vrip.ply')
-        if i == 2:
-            pc = o3d.io.read_point_cloud(file + 'happy_vrip.ply')
-        if i == 3:
-            pc = o3d.io.read_point_cloud(file + 'lucy.ply')
-        # if i == 4:
-        #     pc = o3d.io.read_point_cloud(file + 'data.txt')
+def rigid(src, pose):
+    tf = np.eye(4)
+    tf[:3, :3] = t3d.euler.euler2mat(*np.deg2rad([30.0, 30.0, 0.0]))
+    tf[:3, 3] = 0.01
+    pose = np.matmul(tf, pose)
+    src.transform(tf)
+    return pose
 
-        draw_registration_result(pc)
-        o3d.io.write_point_cloud(file + '3D_model.pcd', pc)
+def transform_test():
+    src = o3d.io.read_point_cloud('./data/TUW_TUW_models/TUW_models/bunny/3D_model.pcd')
+    tar1 = copy.deepcopy(src)
+    tar2 = copy.deepcopy(src)
+
+    pose = np.eye(4)
+    for _ in range(5):
+        pose = rigid(tar1, pose)
+    print('current pose', pose)
+
+    tar2.transform(pose)
+    o3d.visualization.draw_geometries([tar1, tar2])
+    print(src)
+
+
+def set_test():
+    src = ['dog', 'fish', 'human']
+    src_set = set(src)
+    src.append('bird')
+    for s in src:
+        print(s, 'in?', s in src_set)
+
+
+def main():
+    set_test()
+
+
+
 
     # a = np.random.random((10000, 2))
     # noise = np.random.normal(loc=[0.0, 10.0], scale=[1.0, 4.0], size=a.shape)
