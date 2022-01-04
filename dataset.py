@@ -23,38 +23,38 @@ class dataset:
         self.meter_2_mm = True
         self.flag_show = False
 
-        # self.voxel_sizes = (2.67,)
-        # self.angles_cutoff_along = (30.0,)
-        # self.plane_sizes = (0.8,)
-        # self.Gaussian_sigma_factor = (2.6,)
-        # self.n_move = 1
-        # self.translation_rg_factor = (-0.1, 0.1)
-        # self.rotation_reg = (-0.1, 0.0)
-        # self.num_random = (100,)
+        self.voxel_sizes = (0.7,)
+        self.angles_cutoff_along = (0.0,)
+        self.plane_sizes = (0.8,)
+        self.Gaussian_sigma_factor = (0.2,)
+        self.n_move = 2
+        self.translation_rg_factor = (-2.1, 2.1)
+        self.rotation_reg = (-0.1, 0.0)
+        self.num_random = (100,)
 
-        self.voxel_sizes = (0.07, 0.67)
-        self.voxel_sizes = np.arange(self.voxel_sizes[0], self.voxel_sizes[1], (self.voxel_sizes[1]-self.voxel_sizes[0])/4)
-
-        self.angles_cutoff_along = (0.0, 360.0)
-        self.angles_cutoff_along = np.arange(self.angles_cutoff_along[0], self.angles_cutoff_along[1], 60.0)
-        self.angle_cutoff = 90
-
-        self.plane_sizes = (0.8, 2.5)
-        self.plane_sizes = np.arange(self.plane_sizes[0], self.plane_sizes[1], 0.8)
-
-        self.Gaussian_sigma_factor = (0.2, 1.6)
-        self.Gaussian_sigma_factor = np.arange(self.Gaussian_sigma_factor[0], self.Gaussian_sigma_factor[1], 0.2)
-
-        self.n_move = 120
-        self.translation_rg_factor = (-2.5, 2.5)
-        self.rotation_reg = (-360.0, 360.0)
-
-        self.num_random = np.arange(50, 250, 100)
+        # self.voxel_sizes = (0.07, 0.67)
+        # self.voxel_sizes = np.arange(self.voxel_sizes[0], self.voxel_sizes[1], (self.voxel_sizes[1]-self.voxel_sizes[0])/4)
+        #
+        # self.angles_cutoff_along = (0.0, 360.0)
+        # self.angles_cutoff_along = np.arange(self.angles_cutoff_along[0], self.angles_cutoff_along[1], 60.0)
+        # self.angle_cutoff = 90
+        #
+        # self.plane_sizes = (0.8, 1.7)
+        # self.plane_sizes = np.arange(self.plane_sizes[0], self.plane_sizes[1], 0.8)
+        #
+        # self.Gaussian_sigma_factor = (0.2, 1.5)
+        # self.Gaussian_sigma_factor = np.arange(self.Gaussian_sigma_factor[0], self.Gaussian_sigma_factor[1], 0.4)
+        #
+        # self.n_move = 16
+        # self.translation_rg_factor = (-2.5, 2.5)
+        # self.rotation_reg = (-360.0, 360.0)
+        #
+        # self.num_random = np.arange(50, 250, 100)
 
         self.instances = ['bunny', 'water_boiler', 'cisco_phone', 'red_mug_white_spots', 'strands_mounting_unit',
                           'burti', 'skull', 'yellow_toy_car', 'fruchtmolke', 'canon_camera_bag', 'dragon_recon',
                           'happy_recon'] #, 'lucy']
-        # self.instances = ['lucy']
+        # self.instances = ['bunny', 'water_boiler']
 
         self.instance_in_meter = {'bunny', 'water_boiler', 'cisco_phone', 'red_mug_white_spots',
                                   'strands_mounting_unit', 'burti', 'skull', 'yellow_toy_car', 'fruchtmolke',
@@ -202,7 +202,7 @@ class writer(dataset):
     def __exe_down_sampling(self, source, flag_show=True):
         pc = source['pc_artificial']
         voxel_size = source['voxel_size']
-        pc = pc.voxel_down_sample(voxel_size)
+        source['pc_artificial'] = pc.voxel_down_sample(voxel_size)
         if flag_show:
             o3.visualization.draw_geometries([pc], window_name='Initial Setup down to ' + str(voxel_size))
 
@@ -412,6 +412,7 @@ def main():
         pc_model_ = copy.deepcopy(pc_model)
         pc_model_.transform(tf)
 
+        draw_registration_result(source=pc_artificial)
         draw_registration_result(source=pc_artificial, target=pc_model_)
         # print(dl[0])
 

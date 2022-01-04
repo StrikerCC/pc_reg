@@ -38,7 +38,7 @@ def ransac_global_registration(source_down, target_down, source_fpfh,
         source_down, target_down, source_fpfh, target_fpfh, True,
         distance_threshold,
         o3d.pipelines.registration.TransformationEstimationPointToPoint(False),
-        4, [
+        3, [
             o3d.pipelines.registration.CorrespondenceCheckerBasedOnEdgeLength(
                 0.9),
             o3d.pipelines.registration.CorrespondenceCheckerBasedOnDistance(
@@ -136,8 +136,6 @@ def test_artificial_data(flag_show=True, flag_cout=True):
             time_0 = time.time()
             source, target, source_down, target_down, source_fpfh, target_fpfh, orientation_gt, translation_gt = \
                 prepare_dataset_artificial(source_filename=source_filename, voxel_size=voxel_size)
-            if flag_show:
-                draw_registration_result(source=source, target=target, window_name='initial layout')
 
             """initial align"""
             result_global = global_registration(source_down=source_down, target_down=target_down,
@@ -145,10 +143,6 @@ def test_artificial_data(flag_show=True, flag_cout=True):
                                                 voxel_size=voxel_size)
             time_global = time.time() - time_0
             # print(str(global_registration), 'take', )  # result_ransac)
-            if flag_show:
-                draw_registration_result(source=source_down, target=target_down,
-                                         transformation=result_global.transformation,
-                                         window_name='Initial Registration')
 
             """fine align"""
             time_0 = time.time()
@@ -186,6 +180,11 @@ def test_artificial_data(flag_show=True, flag_cout=True):
                 print('Difference result:\n  orientation(degree):\n', statistics[global_registration]['r'][-1],
                       '\n   translation:\n', statistics[global_registration]['t'][-1])
             if flag_show:
+                draw_registration_result(source=source, target=target, window_name='initial layout')
+                draw_registration_result(source=source_down, target=target_down,
+                                         transformation=result_global.transformation,
+                                         window_name='Initial Registration')
+
                 draw_registration_result(source_down, target_down, result_icp.transformation,
                                          window_name='Final Registration')
 
